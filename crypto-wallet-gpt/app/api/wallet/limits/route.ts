@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
 import { prisma } from '@/lib/db/client';
@@ -10,7 +10,7 @@ import { applyRateLimit } from '@/lib/security/rateLimit';
  * Returns user's KYC tier information and transaction limits
  * Used by MCP server to provide context to ChatGPT
  */
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
     // Apply rate limiting
     const rateLimitResult = await applyRateLimit(req, 'default');
