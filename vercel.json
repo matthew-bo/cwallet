@@ -1,7 +1,0 @@
-{
-  "buildCommand": "cd crypto-wallet-gpt && npm install && npm run build",
-  "outputDirectory": "crypto-wallet-gpt/.next",
-  "installCommand": "cd crypto-wallet-gpt && npm install",
-  "devCommand": "cd crypto-wallet-gpt && npm run dev"
-}
-
