@@ -152,9 +152,19 @@ export default function LandingPage() {
         </div>
 
         {/* Footer */}
-        <div className="mt-24 text-center text-sm text-gray-500">
-          <p>Phase 1 MVP • Secure • Private • Simple</p>
-          <p className="mt-2">Starting with USDC on Ethereum (Sepolia testnet)</p>
+        <div className="mt-24">
+          <div className="text-center mb-6">
+            <div className="flex justify-center gap-6 text-sm">
+              <a href="/about" className="text-gray-600 hover:text-gray-900">About</a>
+              <a href="/help" className="text-gray-600 hover:text-gray-900">Help Center</a>
+              <a href="/legal/privacy" className="text-gray-600 hover:text-gray-900">Privacy</a>
+              <a href="/legal/terms" className="text-gray-600 hover:text-gray-900">Terms</a>
+            </div>
+          </div>
+          <div className="text-center text-sm text-gray-500">
+            <p>Phase 3 MVP • Secure • Private • Simple</p>
+            <p className="mt-2">Starting with USDC on Ethereum (Sepolia testnet)</p>
+          </div>
         </div>
       </div>
     </div>

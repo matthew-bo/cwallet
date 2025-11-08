@@ -35,7 +35,7 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account, profile }) {
       // Store Gmail ID for easy lookup
       if (account?.provider === 'google' && user.email) {
-        await prisma.user.upsert({
+        const dbUser = await prisma.user.upsert({
           where: { email: user.email },
           update: {
             gmailId: account.providerAccountId,
@@ -49,7 +49,39 @@ export const authOptions: NextAuthOptions = {
             image: user.image,
             kycTier: 0, // Start with email-only verification
           }
-        })
+        });
+        
+        // Check if user already has a wallet
+        const existingWallet = await prisma.wallet.findFirst({
+          where: {
+            userId: dbUser.id,
+            blockchain: 'ethereum'
+          }
+        });
+        
+        // Auto-create wallet if it doesn't exist (PRD requirement)
+        if (!existingWallet) {
+          try {
+            const { generateEthereumWallet } = await import('../wallet/generator');
+            const walletData = await generateEthereumWallet();
+            
+            await prisma.wallet.create({
+              data: {
+                userId: dbUser.id,
+                blockchain: walletData.blockchain,
+                address: walletData.address,
+                encryptedSeed: walletData.encryptedSeed,
+                kmsKeyId: walletData.kmsKeyId
+              }
+            });
+            
+            console.log(`[AUTO] Created wallet for user ${dbUser.email}`);
+          } catch (error) {
+            console.error('[AUTO] Failed to create wallet:', error);
+            // Don't block sign-in if wallet creation fails
+            // User can create wallet manually later
+          }
+        }
       }
       return true
     },

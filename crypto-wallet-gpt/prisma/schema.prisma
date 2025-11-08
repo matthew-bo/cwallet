@@ -22,10 +22,12 @@ model User {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  wallets      Wallet[]
-  transactions Transaction[]
-  sessions     WalletSession[]
-  accounts     Account[]
+  wallets         Wallet[]
+  transactions    Transaction[]
+  walletSessions  WalletSession[]
+  accounts        Account[]
+  sessions        Session[]
+  contacts        Contact[]
   
   @@map("users")
 }
@@ -117,6 +119,8 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
@@ -128,5 +132,52 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+// Audit log for security and compliance
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String   // SIGN_TRANSACTION_REQUEST, SIGN_TRANSACTION_SUCCESS, etc.
+  details   Json
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+  @@map("audit_logs")
+}
+
+// Transaction nonce tracking for concurrent transactions
+model TransactionNonce {
+  id         String   @id @default(uuid())
+  userId     String   
+  blockchain String   // "ethereum"
+  nonce      Int
+  updatedAt  DateTime @updatedAt
+  
+  @@unique([userId, blockchain])
+  @@map("transaction_nonces")
+}
+
+// Contact model - Stores saved contacts for easy sending
+model Contact {
+  id            String   @id @default(uuid())
+  userId        String
+  email         String?  // Email address (if known)
+  walletAddress String   // Resolved Ethereum address
+  nickname      String?  // User-given name
+  isVerified    Boolean  @default(false) // Whether this contact is a verified user in our system
+  createdAt     DateTime @default(now())
+  lastUsedAt    DateTime @default(now())
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, email])
+  @@unique([userId, walletAddress])
+  @@index([userId, lastUsedAt])
+  @@map("contacts")
 }
 

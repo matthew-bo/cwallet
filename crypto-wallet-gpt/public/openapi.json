@@ -1,0 +1,311 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Simple Crypto Wallet API",
+    "description": "API for managing cryptocurrency wallet operations through ChatGPT",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Development server"
+    }
+  ],
+  "paths": {
+    "/wallet/create": {
+      "post": {
+        "summary": "Create a new wallet",
+        "description": "Creates a new custodial cryptocurrency wallet for the user",
+        "operationId": "createWallet",
+        "responses": {
+          "201": {
+            "description": "Wallet created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "wallet": {
+                      "type": "object",
+                      "properties": {
+                        "address": { "type": "string" },
+                        "blockchain": { "type": "string" },
+                        "createdAt": { "type": "string", "format": "date-time" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/address": {
+      "get": {
+        "summary": "Get wallet address",
+        "description": "Retrieves the user's wallet addresses",
+        "operationId": "getWalletAddress",
+        "responses": {
+          "200": {
+            "description": "Wallet addresses retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "wallets": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "address": { "type": "string" },
+                          "blockchain": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/balance": {
+      "get": {
+        "summary": "Get wallet balance",
+        "description": "Retrieves the current balance of the user's wallet",
+        "operationId": "getWalletBalance",
+        "responses": {
+          "200": {
+            "description": "Balance retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "totalUSD": { "type": "number" },
+                    "balances": {
+                      "type": "object",
+                      "properties": {
+                        "eth": {
+                          "type": "object",
+                          "properties": {
+                            "symbol": { "type": "string" },
+                            "balance": { "type": "string" },
+                            "usdValue": { "type": "number" }
+                          }
+                        },
+                        "usdc": {
+                          "type": "object",
+                          "properties": {
+                            "symbol": { "type": "string" },
+                            "balance": { "type": "string" },
+                            "usdValue": { "type": "number" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/initiate": {
+      "post": {
+        "summary": "Initiate a transaction",
+        "description": "Prepares a transaction and generates a confirmation URL",
+        "operationId": "initiateTransaction",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["recipient", "amount", "currency"],
+                "properties": {
+                  "recipient": {
+                    "type": "string",
+                    "description": "Email address or Ethereum address"
+                  },
+                  "amount": {
+                    "type": "number",
+                    "description": "Amount to send in USD"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "enum": ["USDC"],
+                    "description": "Currency to send (USDC for MVP)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transaction initiated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "transactionId": { "type": "string" },
+                    "confirmationUrl": { "type": "string" },
+                    "expiresIn": { "type": "number" },
+                    "details": {
+                      "type": "object",
+                      "properties": {
+                        "from": { "type": "string" },
+                        "to": { "type": "string" },
+                        "amount": { "type": "number" },
+                        "currency": { "type": "string" },
+                        "estimatedGasCost": { "type": "number" },
+                        "total": { "type": "number" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/status/{id}": {
+      "get": {
+        "summary": "Get transaction status",
+        "description": "Retrieves the current status of a transaction",
+        "operationId": "getTransactionStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Transaction ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction status retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "transaction": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string" },
+                        "type": { "type": "string" },
+                        "status": { "type": "string" },
+                        "amount": { "type": "string" },
+                        "currency": { "type": "string" },
+                        "txHash": { "type": "string" },
+                        "explorerUrl": { "type": "string" },
+                        "confirmations": { "type": "number" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/history": {
+      "get": {
+        "summary": "Get transaction history",
+        "description": "Retrieves the user's transaction history",
+        "operationId": "getTransactionHistory",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction history retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "transactions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "type": { "type": "string" },
+                          "status": { "type": "string" },
+                          "amount": { "type": "string" },
+                          "currency": { "type": "string" },
+                          "createdAt": { "type": "string", "format": "date-time" }
+                        }
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "total": { "type": "integer" },
+                        "limit": { "type": "integer" },
+                        "offset": { "type": "integer" },
+                        "hasMore": { "type": "boolean" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "nextAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "NextAuth session token"
+      }
+    }
+  },
+  "security": [
+    {
+      "nextAuth": []
+    }
+  ]
+}
+
