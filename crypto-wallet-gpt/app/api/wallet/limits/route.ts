@@ -13,12 +13,9 @@ import { applyRateLimit } from '@/lib/security/rateLimit';
 export async function GET(req: NextRequest) {
   try {
     // Apply rate limiting
-    const rateLimitResult = await applyRateLimit(req, 'default');
-    if (!rateLimitResult.success) {
-      return NextResponse.json(
-        { error: 'Too many requests' },
-        { status: 429, headers: rateLimitResult.headers }
-      );
+    const rateLimitResponse = await applyRateLimit(req, 'default');
+    if (rateLimitResponse) {
+      return rateLimitResponse; // Rate limited
     }
 
     // Verify authentication
@@ -127,7 +124,8 @@ export async function GET(req: NextRequest) {
       },
       _sum: {
         amount: true
-      }
+      },
+      _count: true
     });
 
     const dailyUsedUSD = Number(dailyTransactions._sum.amount || 0);
@@ -187,8 +185,6 @@ export async function GET(req: NextRequest) {
         nextTierName: userTier < 2 ? tierLimits[userTier + 1 as 1 | 2].name : null,
         benefits: limits.upgradeRequired,
       }
-    }, {
-      headers: rateLimitResult.headers
     });
 
   } catch (error) {
